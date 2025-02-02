@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="72.947739mm"
+   height="87.189774mm"
+   viewBox="0 0 72.947739 87.189774"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.3 (0e150ed6c4, 2023-07-21)"
+   sodipodi:docname="DWARF - GOBLINS all sprites.svg"
+   inkscape:dataloss="true"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="0.24535703"
+     inkscape:cx="8760.7029"
+     inkscape:cy="-3397.0904"
+     inkscape:window-width="1920"
+     inkscape:window-height="991"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <filter
+       style="color-interpolation-filters:sRGB"
+       inkscape:label="Blur"
+       id="filter184"
+       x="-0.24515858"
+       y="-0.18990407"
+       width="1.4903172"
+       height="1.3798081">
+      <feGaussianBlur
+         stdDeviation="5 5"
+         result="blur"
+         id="feGaussianBlur184" />
+    </filter>
+    <filter
+       style="color-interpolation-filters:sRGB"
+       inkscape:label="Blur"
+       id="filter185"
+       x="-0.24515858"
+       y="-0.18990407"
+       width="1.4903172"
+       height="1.3798081">
+      <feGaussianBlur
+         stdDeviation="5 5"
+         result="blur"
+         id="feGaussianBlur185" />
+    </filter>
+  </defs>
+  <g
+     inkscape:label="Capa 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-2929.2979,885.7988)">
+    <g
+       id="g189"
+       transform="translate(2285.1312,2164.1469)">
+      <path
+         id="path109-2-2-0-5-4-8-5-3-8-5-5-2"
+         style="fill:#ffffff;fill-opacity:1;stroke-width:17.5151;stroke-linecap:round;filter:url(#filter184)"
+         d="m 674.72262,-3037.9457 -4.3248,1.2821 -1.52187,0.786 -11.51093,4.8699 v 0 l -1.19837,9.6015 0.56482,5.9919 2.1084,6.8435 0.98082,0.7121 v 3.0499 l 2.50114,1.6263 -1.80196,6.1443 -0.52348,8.0352 -1.45159,2.3368 -1.17564,3.7837 5.09994,4.2256 7.19853,-3.7879 -1.39268,-2.8096 v -5e-4 l -0.77825,-2.0283 5.12321,-5.3093 4.27777,7.5252 3.11247,1.3435 -3.35948,-10.1435 3.36,10.1435 3.83439,0.072 -3.83491,-0.072 -3.11247,-1.3436 -0.23203,2.5414 -2.40037,4.9852 4.60851,2.7849 7.18044,-0.6899 2.82256,-8.3323 -1.42988,-0.5271 -0.84388,-2.6143 v -5e-4 l 1.16634,-10.3534 6.74739,7.2678 0.70177,2.1425 -0.53434,4.0209 5.29374,0.3178 5.13663,-3.2489 -0.11213,-5.335 -3.55431,-1.4191 -1.44022,-1.0531 -0.41651,3.5584 h -5.2e-4 l 0.41703,-3.5584 -0.17829,-9.1313 -3.19515,-5.3221 -0.13953,-0.7597 v -1.9487 h 1.28726 l 0.89607,-5.5505 0.8382,-3.4453 10e-4,-5e-4 v 0 -5e-4 l -0.50746,-9.9218 -12.12846,-5.548 -0.73587,5e-4 v -0.448 l -4.32481,-1.2821 h -0.30592 -3.35742 z m 13.04675,40.6678 6.67143,2.2086 -6.67143,-2.2081 z" />
+      <path
+         id="path109-2-2-0-5-4-8-5-3-8-5-5-23"
+         style="fill:#ffffff;fill-opacity:1;stroke-width:17.5151;stroke-linecap:round;filter:url(#filter185)"
+         d="m 674.72262,-3037.9457 -4.3248,1.2821 -1.52187,0.786 -11.51093,4.8699 v 0 l -1.19837,9.6015 0.56482,5.9919 2.1084,6.8435 0.98082,0.7121 v 3.0499 l 2.50114,1.6263 -1.80196,6.1443 -0.52348,8.0352 -1.45159,2.3368 -1.17564,3.7837 5.09994,4.2256 7.19853,-3.7879 -1.39268,-2.8096 v -5e-4 l -0.77825,-2.0283 5.12321,-5.3093 4.27777,7.5252 3.11247,1.3435 -3.35948,-10.1435 3.36,10.1435 3.83439,0.072 -3.83491,-0.072 -3.11247,-1.3436 -0.23203,2.5414 -2.40037,4.9852 4.60851,2.7849 7.18044,-0.6899 2.82256,-8.3323 -1.42988,-0.5271 -0.84388,-2.6143 v -5e-4 l 1.16634,-10.3534 6.74739,7.2678 0.70177,2.1425 -0.53434,4.0209 5.29374,0.3178 5.13663,-3.2489 -0.11213,-5.335 -3.55431,-1.4191 -1.44022,-1.0531 -0.41651,3.5584 h -5.2e-4 l 0.41703,-3.5584 -0.17829,-9.1313 -3.19515,-5.3221 -0.13953,-0.7597 v -1.9487 h 1.28726 l 0.89607,-5.5505 0.8382,-3.4453 10e-4,-5e-4 v 0 -5e-4 l -0.50746,-9.9218 -12.12846,-5.548 -0.73587,5e-4 v -0.448 l -4.32481,-1.2821 h -0.30592 -3.35742 z m 13.04675,40.6678 6.67143,2.2086 -6.67143,-2.2081 z" />
+    </g>
+  </g>
+</svg>

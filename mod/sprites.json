@@ -1,0 +1,199 @@
+{
+	"fruit_minerskagg_": {
+		"pixelsPerUnit": 1280
+	},
+	"fruit_minerskurk_": {
+		"pixelsPerUnit": 1280
+	},
+	"fruit_outline_minerskagg_": {
+		"pixelsPerUnit": 1280
+	},
+	"fruit_outline_minerskurk_": {
+		"pixelsPerUnit": 1280
+	},
+	"game_minerskagg_": {
+		"pixelsPerUnit": 960
+	},
+	"game_minerskurk_": {
+		"pixelsPerUnit": 960
+	},
+	"game_outline_minerskagg_": {
+		"pixelsPerUnit": 960
+	},
+	"game_outline_minerskurk_": {
+		"pixelsPerUnit": 864
+	},
+	"harvestfruit_minerskagg_": {
+		"pixelsPerUnit": 1280
+	},
+	"hunting_minerskagg_": {
+		"pixelsPerUnit": 1280
+	},
+	"harvestfruit_minerskurk_": {
+		"pixelsPerUnit": 1280
+	},
+	"hunting_minerskurk_": {
+		"pixelsPerUnit": 1280
+	},
+	"house_minerskagg_1": {
+		"pixelsPerUnit": 1800,
+		"pivot": [0.5, 0.05]
+	},
+	"house_minerskagg_2": {
+		"pixelsPerUnit": 1800,
+		"pivot": [0.5, 0.05]
+	},
+	"house_minerskagg_3": {
+		"pixelsPerUnit": 1800,
+		"pivot": [0.5, 0.05]
+	},
+	"house_minerskagg_4": {
+		"pixelsPerUnit": 1800,
+		"pivot": [0.5, 0.05]
+	},
+	"house_minerskagg_5": {
+		"pixelsPerUnit": 1800,
+		"pivot": [0.5, 0.05]
+	},
+	"house_minerskagg_7": {
+		"pixelsPerUnit": 1800,
+		"pivot": [0.5, 0.05]
+	},
+	"house_minerskurk_1": {
+		"pixelsPerUnit": 1800,
+		"pivot": [0.5, 0.05]
+	},
+	"house_minerskurk_2": {
+		"pixelsPerUnit": 1800,
+		"pivot": [0.5, 0.05]
+	},
+	"house_minerskurk_3": {
+		"pixelsPerUnit": 1800,
+		"pivot": [0.5, 0.05]
+	},
+	"house_minerskurk_4": {
+		"pixelsPerUnit": 1800,
+		"pivot": [0.5, 0.05]
+	},
+	"house_minerskurk_5": {
+		"pixelsPerUnit": 1800,
+		"pivot": [0.5, 0.05]
+	},
+	"house_minerskurk_7": {
+		"pixelsPerUnit": 1800,
+		"pivot": [0.5, 0.05]
+	},
+	"factory__0": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.25]
+	},
+	"factory__1": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.25]
+	},
+	"factory__2": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.25]
+	},
+	"factory__3": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.25]
+	},
+	"factory__4": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.25]
+	},
+	"factory__5": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.25]
+	},
+	"factory__6": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.25]
+	},
+	"factory__7": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.25]
+	},
+	"factory__8": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.25]
+	},
+	"factory_minerskurk_0": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.25]
+	},
+	"factory_minerskurk_1": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.25]
+	},
+	"factory_minerskurk_2": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.25]
+	},
+	"factory_minerskurk_3": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.25]
+	},
+	"factory_minerskurk_4": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.25]
+	},
+	"factory_minerskurk_5": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.25]
+	},
+	"factory_minerskurk_6": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.25]
+	},
+	"factory_minerskurk_7": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.25]
+	},
+	"factory_minerskurk_8": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.25]
+	},
+	"monument1_minerskagg_": {
+		"pixelsPerUnit": 792
+	},
+	"monument2_minerskagg_": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.125]
+	},
+	"monument3_minerskagg_": {
+		"pixelsPerUnit": 1056
+	},
+	"monument4_minerskagg_": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.25]
+	},
+	"monument5_minerskagg_": {
+		"pixelsPerUnit": 1056
+	},
+	"monument6_minerskagg_": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.4]
+	},
+	"monument7_minerskagg_": {
+		"pixelsPerUnit": 792,
+		"pivot": [0.5, 0.25]
+	},
+	"weapon_club_dynamiter__": {
+		"pixelsPerUnit": 660,
+		"pivot": [1, 0.5]
+	},
+	"animal_rider_minerskagg_": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.4, 0.35]
+	},
+	"animal_berserker_minerskagg_": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.4, 0.35]
+	},
+	"weapon_club_berserker__": {
+		"pixelsPerUnit": 792,
+		"pivot": [0.4, 0.65]
+	}
+}
