@@ -1,0 +1,47 @@
+{
+	"tribes_minerskagg": {
+		"English": "Minerskägg",
+		"Spanish (Mexico)": "Minerskägg",
+		"Russian": "Minerskägg"
+	},
+	"tribes_minerskagg_info": {
+		"English": "The {0} are experts at excavating the ground. This is how they obtain gold and minerals with which to beautify the majestic houses of their cities. \n\nTheir excavations, factories and tunnels transform the landscape to turn the Square into a giant mine.",
+		"Russian": "{0} — специалисты по раскопкам земли. Так они добывают золото и минералы, чтобы украсить величественные здания своих городов. \n\nИх раскопки, фабрики и туннели преобразуют ландшафт, превращая квадрат в одну гигантскую шахту."
+	},
+	"tribes_minerskagg_info2": {
+		"English": "{0} starts the game with the '{1}' tech.",
+		"Russian": "Племя {0} начинает игру с технологией '{1}'."
+	},
+	"technology_names_excavations": {
+		"English": "Excavations",
+		"Russian": "Раскопки"
+	},
+	"technology_names_manufacturing": {
+		"English": "Manufacturing",
+		"Russian": "Производство"
+	},
+	"building_names_diggyhole": {
+		"English": "Diggyhole",
+		"Russian": "Карьер"
+	},
+	"building_names_factory": {
+		"English": "Factory",
+		"Russian": "Фабрика"
+	},
+	"building_names_tunnel": {
+		"English": "Tunnel",
+		"Russian": "Тунель"
+	},
+	"building_names_station": {
+		"English": "Station",
+		"Russian": "Станция"
+	},
+	"unit_names_berserker": {
+		"English": "Berserk",
+		"Russian": "Берсерк"
+	},
+	"unit_names_dynamiter": {
+		"English": "Dynamiter",
+		"Russian": "Подрывник"
+	}
+}
