@@ -4,28 +4,25 @@
 			"color": 15713321,
 			"language": "az,bar,bryn,düm,girt,hall,kar,khäz,kol,kruk,lok,rüdh,ruf,und,vorn,zak",
 			"unitOverrides": {
-				"giant": "giant",
-				"cloak": "cloak",
-				"defender": "defender",
-				"catapult": "dynamiter",
-				"knight": "berserker"
+				"catapult": "dynamiter"
 			},
 			"techOverrides": {
-				"forestry": "excavations",
-				"mathematics": "manufacturing"
 			},
 			"improvementOverrides": {
-				"road": "tunnel"
+				"mine": "diggyhole",
+				"forge": "factory",
+				"road": "rail"
 			},
 			"startingTech": [
-				"basic"
+				"basic",
+				"mining"
 			],
 			"terrainModifier": {
 				"mountain": 2,
 				"forest": 0.5
 			},
 			"resourceModifier": {
-				"metal": 0.8,
+				"metal": 1.5,
 				"fruit": 0.4,
 				"fish": 0.1,
 				"crop": 0.1,
@@ -49,30 +46,38 @@
 			"startingResource": [
 				"game"
 			],
+			"tribeAbilities": [
+				"geology"
+			],
 			"idx": -1
 		}
 	},
 	"improvementData": {
 		"diggyhole": {
-			"cost": 4,
+			"cost": 5,
 			"terrainRequirements": [
 				{
-					"terrain": "field"
+					"resource": "yellowshard"
+				},
+				{
+					"resource": "purpleshard"
+				},
+				{
+					"resource": "blueshard"
 				}
 			],
 			"maxLevel": 0,
-			"rewards": [
-				{
-					"population": 1
-				}
+			"improvementAbilities": [
+				"dig"
 			],
+			"shouldSuggestUnlock": true,
 			"idx": -1
 		},
 		"factory": {
 			"cost": 5,
-			"adjacencyImprovements": [
+			"terrainRequirements": [
 				{
-					"improvement": "diggyhole"
+					"terrain": "field"
 				}
 			],
 			"adjacencyRequirements": [
@@ -80,9 +85,9 @@
 					"improvement": "diggyhole"
 				}
 			],
-			"terrainRequirements": [
+			"adjacencyImprovements": [
 				{
-					"terrain": "field"
+					"improvement": "diggyhole"
 				}
 			],
 			"improvementAbilities": [
@@ -94,75 +99,51 @@
 					"population": 0
 				}
 			],
-			"idx": -1,
 			"growthRewards": [
 				{
-					"score": 0,
-					"population": 1
+					"score":0,
+					"population": 2
 				}
-			]
+			],
+			"idx": -1
 		},
-		"tunnel": {
-			"idx": -1,
-			"cost": 5,
-			"range": 5,
-			"routes": [
-				"field",
-				"forest",
-				"mountain"
+		"rail": {
+			"cost": 4,
+			"range": 1,
+			"improvementAbilities": [
+				"network",
+				"rail",
+				"depot"
 			],
 			"terrainRequirements": [
 				{
 					"terrain": "field"
-				},
-				{
-					"terrain": "mountain"
 				}
 			],
+			"routes": [
+				"field"
+			],
+			"idx": -1
+		},
+		"station": {
+			"cost": 5,
 			"improvementAbilities": [
-				"network",
-				"limited",
-				"teleport"
-			]
-		}
-	},
-	"techData": {
-		"basic": {
-			"unitUnlocks": [
-				"giant",
-				"bunny",
-				"scout",
-				"transportship",
-				"warrior",
-				"babydragon",
-				"firedragon",
-				"dagger",
-				"slingeshotleveltwo",
-				"slingeshotlevelthree"
-			]
-		},
-		"excavations": {
-			"techUnlocks": [
-				"mathematics"
+				"depot"
 			],
-			"improvementUnlocks": [
-				"diggyhole",
-				"clearforest"
+			"terrainRequirements": [
+				{
+					"terrain": "field"
+				}
 			],
-			"cost": 2,
-			"idx": -1
-		},
-		"manufacturing": {
-			"improvementUnlocks": [
-				"factory"
+			"rewards": [
+				{
+					"population": 1
+				}
 			],
-			"unitUnlocks": [
-				"catapult"
-			],
-			"cost": 3,
 			"idx": -1
 		}
 	},
+	"techData": {},
 	"unitData": {
 		"dynamiter": {
 			"health": 100,
@@ -182,94 +163,61 @@
 			"idx": -1,
 			"prefab": "warrior"
 		},
-		"berserker": {
-			"health": 150,
-			"defence": 15,
+		"minecart": {
+			"health": 100,
 			"movement": 3,
 			"range": 1,
-			"attack": 30,
-			"cost": 8,
+			"defence": 10,
+			"attack": 20,
+			"cost": 5,
+			"hidden": true,
 			"unitAbilities": [
 				"dash",
-				"berserk",
-				"fortify",
-				"land"
+				"carry",
+				"static",
+				"protect",
+				"wagon"
 			],
 			"weapon": 16,
-			"promotionLimit": 3,
-			"idx": -1,
-			"prefab": "rider"
-		},
-		"slingeshotlevelone": {
-			"health": 100,
-			"defence": 0,
-			"movement": 1,
-			"range": 2,
-			"attack": 10,
-			"cost": 3,
-			"weapon": 3,
 			"promotionLimit": 0,
-			"growthRate": 1,
-			"unitAbilities": [
-				"grow",
-				"dash",
-				"fortify",
-				"static",
-				"land"
-			],
-			"idx": -1
-		},
-		"slingeshotleveltwo": {
-			"health": 100,
-			"defence": 0,
-			"movement": 1,
-			"range": 2,
-			"attack": 20,
-			"cost": 3,
-			"weapon": 3,
-			"promotionLimit": 0,
-			"growthRate": 1,
-			"hidden": true,
-			"upgradesFrom": "slingeshotlevelone",
-			"unitAbilities": [
-				"grow",
-				"dash",
-				"fortify",
-				"static",
-				"land"
-			],
-			"idx": -1
-		},
-		"slingeshotlevelthree": {
-			"health": 100,
-			"defence": 10,
-			"movement": 1,
-			"range": 2,
-			"attack": 30,
-			"cost": 3,
-			"weapon": 3,
-			"promotionLimit": 0,
-			"growthRate": 1,
-			"hidden": true,
-			"upgradesFrom": "slingeshotleveltwo",
-			"unitAbilities": [
-				"grow",
-				"dash",
-				"fortify",
-				"static",
-				"land"
-			],
 			"idx": -1
 		}
 	},
-	"resourceData": {},
+	"resourceData": {
+		"yellowshard": {
+			"resourceTerrainRequirements": [
+				"mountain"
+			],
+			"idx": -1
+		},
+		"purpleshard": {
+			"resourceTerrainRequirements": [
+				"mountain"
+			],
+			"prefab": "fruit",
+			"idx": -1
+		},
+		"blueshard": {
+			"resourceTerrainRequirements": [
+				"mountain"
+			],
+			"prefab": "fish",
+			"idx": -1
+		}
+	},
 	"skinData": {
 		"Minerskurk" : {
 			"color" : 6786096
 		}
 	},
 	"improvementAbility": {
-		"teleport": {
+		"depot": {
+			"idx": -1
+		},
+		"dig": {
+			"idx": -1
+		},
+		"rail": {
 			"idx": -1
 		}
 	},
@@ -277,10 +225,23 @@
 		"throw": {
 			"idx": -1
 		},
-		"berserk": {
+		"wagon": {
+			"idx": -1
+		}
+	},
+	"tribeAbility": {
+		"geology": {
+			"idx": -1
+		}
+	},
+	"cityReward": {
+		"yellowshard": {
 			"idx": -1
 		},
-		"battledestroy": {
+		"purpleshard": {
+			"idx": -1
+		},
+		"blueshard": {
 			"idx": -1
 		}
 	}
