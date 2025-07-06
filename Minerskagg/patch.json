@@ -165,7 +165,7 @@
 		},
 		"minecart": {
 			"health": 100,
-			"movement": 3,
+			"movement": 100,
 			"range": 1,
 			"defence": 10,
 			"attack": 20,
@@ -180,7 +180,8 @@
 			],
 			"weapon": 16,
 			"promotionLimit": 0,
-			"idx": -1
+			"idx": -1,
+			"prefab": "boat"
 		}
 	},
 	"resourceData": {

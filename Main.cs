@@ -17,7 +17,8 @@ public static class Main
     private record ShardsInfo(int yellowShardCount, int purpleShardCount, int blueShardCount);
     private static Transform? yellowShardContainer = null;
     private static Transform? purpleShardContainer = null;
-    private static Transform? blueShardContainer = null;
+    private static Transform? blueShardContainer = null; private static bool currentlyWagoning = false;
+
     public static void Load(ManualLogSource logger)
     {
         PolyMod.Loader.AddPatchDataType("cityReward", typeof(CityReward));
@@ -346,64 +347,70 @@ public static class Main
     [HarmonyPatch(typeof(MoveAction), nameof(MoveAction.ExecuteDefault))]
     private static void MoveAction_ExecuteDefault(MoveAction __instance, GameState gameState)
     {
+        Console.Write("MoveAction_ExecuteDefault");
         UnitState unitState;
         PlayerState playerState;
         UnitData unitData;
         if (gameState.TryGetUnit(__instance.UnitId, out unitState) && gameState.TryGetPlayer(__instance.PlayerId, out playerState) && gameState.GameLogicData.TryGetData(unitState.type, out unitData))
         {
-            WorldCoordinates worldCoordinates = __instance.Path[0];
-            WorldCoordinates worldCoordinates2 = __instance.Path[__instance.Path.Count - 1];
-            TileData tile2 = gameState.Map.GetTile(worldCoordinates2);
-            if (!unitState.HasAbility(UnitAbility.Type.Fly, gameState) && tile2.improvement != null)
+            TileData unitTile = gameState.Map.GetTile(unitState.coordinates);
+            if (unitTile.improvement != null && gameState.GameLogicData.TryGetData(unitTile.improvement.type, out ImprovementData data) && data.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("depot")) && !unitState.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")))
             {
-                if (gameState.GameLogicData.TryGetData(tile2.improvement.type, out ImprovementData improvementData))
-                {
-                    if (improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("depot")))
-                    {
-                        UnitData.Type type = EnumCache<UnitData.Type>.GetType("minecart");
-                        UnitData wagonData;
-                        gameState.GameLogicData.TryGetData(type, out wagonData);
-                        UnitState newUnitState = ActionUtils.TrainUnit(gameState, playerState, tile2, wagonData);
-                        if (!unitState.HasAbility(UnitAbility.Type.Protect, gameState))
-                        {
-                            newUnitState.health = unitState.health;
-                        }
-                        newUnitState.home = unitState.home;
-                        newUnitState.direction = unitState.direction;
-                        newUnitState.flipped = unitState.flipped;
-                        newUnitState.passengerUnit = unitState;
-                        newUnitState.effects = unitState.effects;
-                        newUnitState.attacked = true;
-                        newUnitState.moved = true;
-                    }
-                }
+                gameState.GameLogicData.TryGetData(EnumCache<UnitData.Type>.GetType("minecart"), out UnitData wagonData);
+                gameState.ActionStack.Add(new EmbarkAction(__instance.PlayerId, unitTile.coordinates));
+                currentlyWagoning = true;
             }
-            else if (unitData.IsVehicle() && unitData.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")))
+            else if (unitTile.improvement != null && gameState.GameLogicData.TryGetData(unitTile.improvement.type, out ImprovementData imrdata) && imrdata.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("depot")) && unitState.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")))
             {
-                UnitState unit = tile2.unit;
-                UnitState passengerUnit = unit.passengerUnit;
-                if (passengerUnit != null)
-                {
-                    if (!unit.HasAbility(UnitAbility.Type.Protect, gameState))
-                    {
-                        passengerUnit.health = unit.health;
-                    }
-                    passengerUnit.flipped = unit.flipped;
-                    passengerUnit.direction = unit.direction;
-                    passengerUnit.moved = true;
-                    passengerUnit.attacked = true;
-                    tile2.SetUnit(passengerUnit);
-                    passengerUnit.coordinates = tile2.coordinates;
-                    UnitData newUnitData;
-                    if (gameState.GameLogicData.TryGetData(passengerUnit.type, out newUnitData) && passengerUnit.HasAbility(UnitAbility.Type.Grow, gameState))
-                    {
-                        Il2CppSystem.Collections.Generic.List<UnitData> unlockedUpgradesForUnit = gameState.GameLogicData.GetUnlockedUpgradesForUnit(playerState, gameState, newUnitData);
-                        if (unlockedUpgradesForUnit.Count > 0 && tile2.unit.GetAge(gameState) >= 3U)
-                        {
-                            gameState.ActionStack.Add(new UpgradeAction(__instance.PlayerId, unlockedUpgradesForUnit[0].type, tile2.coordinates, 0));
-                        }
-                    }
-                }
+            }
+            else
+            {
+                gameState.ActionStack.Add(new DisembarkAction(__instance.PlayerId, unitTile.coordinates));
+            }
+        }
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(ActionUtils), nameof(ActionUtils.TrainUnit))]
+    private static bool ActionUtils_TrainUnit(ref UnitState __result, GameState gameState, PlayerState playerState, TileData tile, ref UnitData unitData)
+    {
+        if (tile == null)
+        {
+            return true;
+        }
+        if (tile.unit == null)
+        {
+            return true;
+        }
+        if (currentlyWagoning)
+        {
+            currentlyWagoning = false;
+            gameState.GameLogicData.TryGetData(EnumCache<UnitData.Type>.GetType("minecart"), out unitData);
+        }
+        return true;
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(UnitDataExtensions), nameof(UnitDataExtensions.IsVehicle))]
+    public static void UnitDataExtensions_IsVehicle(ref bool __result, UnitData unitData)
+    {
+        if (__result && unitData.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")))
+        {
+            __result = false;
+        }
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(TileData), nameof(TileData.GetMovementCost))]
+    public static void GetMovementCost(ref int __result, TileData __instance, MapData map, TileData fromTile, PathFinderSettings settings)
+    {
+        if (settings.unit != null && settings.unit.UnitData.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")))
+        {
+            __result = 1000;
+            if (__instance.improvement != null && settings.gameState.GameLogicData.TryGetData(__instance.improvement.type, out ImprovementData data)
+                && (data.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("rail")) ||  data.type == ImprovementData.Type.City))
+            {
+                __result = 0;
             }
         }
     }
