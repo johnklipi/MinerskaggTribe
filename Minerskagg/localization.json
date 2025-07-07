@@ -20,8 +20,16 @@
 		"English": "Manufacturing",
 		"Russian": "Производство"
 	},
-	"building_names_diggyhole": {
-		"English": "Diggyhole",
+	"building_names_diggyyellow": {
+		"English": "Diggyhole (Yellow Shard)",
+		"Russian": "Карьер"
+	},
+	"building_names_diggypurple": {
+		"English": "Diggyhole (Purple Shard)",
+		"Russian": "Карьер"
+	},
+	"building_names_diggyblue": {
+		"English": "Diggyhole (Blue Shard)",
 		"Russian": "Карьер"
 	},
 	"building_names_factory": {
@@ -33,6 +41,10 @@
 		"Russian": "Тунель"
 	},
 	"building_names_station": {
+		"English": "Station",
+		"Russian": "Станция"
+	},
+	"building_names_rail": {
 		"English": "Station",
 		"Russian": "Станция"
 	},

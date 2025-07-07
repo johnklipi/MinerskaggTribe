@@ -360,9 +360,6 @@ public static class Main
                 gameState.ActionStack.Add(new EmbarkAction(__instance.PlayerId, unitTile.coordinates));
                 currentlyWagoning = true;
             }
-            else if (unitTile.improvement != null && gameState.GameLogicData.TryGetData(unitTile.improvement.type, out ImprovementData imrdata) && imrdata.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("depot")) && unitState.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")))
-            {
-            }
             else
             {
                 gameState.ActionStack.Add(new DisembarkAction(__instance.PlayerId, unitTile.coordinates));
@@ -407,11 +404,123 @@ public static class Main
         if (settings.unit != null && settings.unit.UnitData.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")))
         {
             __result = 1000;
-            if (__instance.improvement != null && settings.gameState.GameLogicData.TryGetData(__instance.improvement.type, out ImprovementData data)
-                && (data.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("rail")) ||  data.type == ImprovementData.Type.City))
+            List<TileData> neighbours = map.GetTileNeighbors(__instance.coordinates).ToArray().ToList();
+            neighbours.Add(__instance);
+            foreach (var tileData in neighbours)
             {
-                __result = 0;
+                if (tileData.improvement != null && settings.gameState.GameLogicData.TryGetData(tileData.improvement.type, out ImprovementData data)
+                    && (data.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("rail")) || data.type == ImprovementData.Type.City))
+                {
+                    __result = 0;
+                    return;
+                }
             }
+        }
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(PathFinder), nameof(PathFinder.GetMoveOptions))]
+    private static void PathFinder_GetMoveOptions(ref Il2CppSystem.Collections.Generic.List<WorldCoordinates> __result, GameState gameState, WorldCoordinates start, int maxCost, UnitState unit)
+    {
+        List<WorldCoordinates> toRemove = new();
+        foreach (var cordinates in __result)
+        {
+            PathFinderSettings pathFinderSettings = PathFinderSettings.CreateForUnit(unit, gameState);
+            TileData tile = gameState.Map.GetTile(cordinates);
+            int cost = tile.GetMovementCost(gameState.Map, gameState.Map.GetTile(start), pathFinderSettings);
+            if (cost == 1000)
+            {
+                toRemove.Add(cordinates);
+            }
+        }
+        foreach (var item in toRemove)
+        {
+            __result.Remove(item);
+        }
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(CommandUtils), nameof(CommandUtils.GetUnitActions))]
+    public static void CommandUtils_GetUnitActions(ref Il2CppSystem.Collections.Generic.List<CommandBase> __result, GameState gameState, PlayerState player, TileData tile, bool includeUnavailable = false)
+    {
+        UnitState unit = tile.unit;
+        if (unit == null)
+        {
+            return;
+        }
+        if (unit.owner != player.Id)
+        {
+            return;
+        }
+        foreach (ImprovementData improvementData in gameState.GameLogicData.GetUnlockedImprovements(player))
+        {
+            if (improvementData.HasAbility(ImprovementAbility.Type.Manual) && gameState.GameLogicData.CanBuild(gameState, tile, player, improvementData) && improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("actionless")))
+            {
+                if (unit.CanBuild())
+                {
+                    for (int i = __result.Count - 1; i >= 0; i--)
+                    {
+                        CommandBase command = __result[i];
+                        if (command.GetCommandType() == CommandType.Build)
+                        {
+                            BuildCommand buildCommand = command.Cast<BuildCommand>();
+                            if (
+                                buildCommand.PlayerId == player.Id &&
+                                buildCommand.Type == improvementData.type &&
+                                buildCommand.Coordinates == tile.coordinates)
+                            {
+                                __result.RemoveAt(i);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    CommandUtils.AddCommand(gameState, __result, new BuildCommand(player.Id, improvementData.type, tile.coordinates), includeUnavailable);
+                }
+            }
+        }
+        return;
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(ClientInteraction), nameof(ClientInteraction.SelectTile))]
+    public static void ClientInteraction_SelectTile(ClientInteraction __instance, Tile tile)
+    {
+        if (tile.IsHidden)
+        {
+            __instance.SelectTileInternal(tile);
+            // CameraController.Instance.RevealTile(__instance.selectedTile, true, 1f, true, false, null);
+        }
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(InteractionBar), nameof(InteractionBar.OnTileSelected))]
+    private static bool InteractionBar_OnTileSelected(InteractionBar __instance, Tile tile)
+    {
+        Console.Write("InteractionBar_OnTileSelected");
+        if (tile == null || tile.IsHidden)
+        {
+            __instance.SetMode(InteractionBar.Mode.None);
+            __instance.SetTile(tile);
+            __instance.building = null;
+            __instance.unit = null;
+            __instance.Refresh();
+            Console.Write("false");
+            return false;
+        }
+        Console.Write("true");
+        return true;
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(SelectionIndicator), nameof(SelectionIndicator.OnTileSelected))]
+    private static void SelectionIndicator_OnTileSelected(SelectionIndicator __instance, Tile tile)
+    {
+        Console.Write("SelectionIndicator_OnTileSelected");
+        if (tile == null || tile.IsHidden)
+        {
+            __instance.cityAreaSelection.Hide();
         }
     }
 }

@@ -7,15 +7,16 @@
 				"catapult": "dynamiter"
 			},
 			"techOverrides": {
+				"mining": "excavations"
 			},
 			"improvementOverrides": {
-				"mine": "diggyhole",
 				"forge": "factory",
 				"road": "rail"
 			},
 			"startingTech": [
 				"basic",
-				"mining"
+				"minerbase",
+				"excavations"
 			],
 			"terrainModifier": {
 				"mountain": 2,
@@ -40,11 +41,11 @@
 					"x": 0,
 					"y": 0,
 					"terrainType": "field",
-					"improvementType": "diggyhole"
+					"improvementType": "none"
 				}
 			],
 			"startingResource": [
-				"game"
+				"metal"
 			],
 			"tribeAbilities": [
 				"geology"
@@ -53,20 +54,60 @@
 		}
 	},
 	"improvementData": {
-		"diggyhole": {
+		"farm": {
+			"shouldSuggestUnlock": false
+		},
+		"diggyyellow": {
 			"cost": 5,
 			"terrainRequirements": [
 				{
 					"resource": "yellowshard"
-				},
+				}
+			],
+			"maxLevel": 0,
+			"rewards": [
+				{
+					"population": 1
+				}
+			],
+			"improvementAbilities": [
+				"dig"
+			],
+			"shouldSuggestUnlock": true,
+			"idx": -1
+		},
+		"diggypurple": {
+			"cost": 5,
+			"terrainRequirements": [
 				{
 					"resource": "purpleshard"
-				},
+				}
+			],
+			"maxLevel": 0,
+			"rewards": [
+				{
+					"population": 1
+				}
+			],
+			"improvementAbilities": [
+				"dig"
+			],
+			"shouldSuggestUnlock": true,
+			"idx": -1
+		},
+		"diggyblue": {
+			"cost": 5,
+			"terrainRequirements": [
 				{
 					"resource": "blueshard"
 				}
 			],
 			"maxLevel": 0,
+			"rewards": [
+				{
+					"population": 1
+				}
+			],
 			"improvementAbilities": [
 				"dig"
 			],
@@ -82,12 +123,24 @@
 			],
 			"adjacencyRequirements": [
 				{
-					"improvement": "diggyhole"
+					"improvement": "diggyyellow"
+				},
+				{
+					"improvement": "diggypurple"
+				},
+				{
+					"improvement": "diggyblue"
 				}
 			],
 			"adjacencyImprovements": [
 				{
-					"improvement": "diggyhole"
+					"improvement": "diggyyellow"
+				},
+				{
+					"improvement": "diggypurple"
+				},
+				{
+					"improvement": "diggyblue"
 				}
 			],
 			"improvementAbilities": [
@@ -120,6 +173,11 @@
 					"terrain": "field"
 				}
 			],
+			"rewards": [
+				{
+					"population": 1
+				}
+			],
 			"routes": [
 				"field"
 			],
@@ -141,9 +199,41 @@
 				}
 			],
 			"idx": -1
+		},
+		"restoreactions": {
+			"improvementAbilities": [
+				"consumed",
+				"freelance",
+				"manual",
+				"actionless"
+			],
+			"maxLevel": 0,
+			"shouldSuggestUnlock": true,
+			"idx": -1
 		}
 	},
-	"techData": {},
+	"techData": {
+		"minerbase": {
+			"cost": 0,
+			"improvementUnlocks": [
+				"diggyyellow",
+				"diggypurple",
+				"diggyblue",
+				"restoreactions"
+			],
+			"idx": -1
+		},
+		"excavations": {
+			"techUnlocks": [
+				"smithery"
+			],
+			"abilityUnlocks": [
+				"diggyhole"
+			],
+			"cost": 2,
+			"idx": -1
+		}
+	},
 	"unitData": {
 		"dynamiter": {
 			"health": 100,
@@ -195,14 +285,12 @@
 			"resourceTerrainRequirements": [
 				"mountain"
 			],
-			"prefab": "fruit",
 			"idx": -1
 		},
 		"blueshard": {
 			"resourceTerrainRequirements": [
 				"mountain"
 			],
-			"prefab": "fish",
 			"idx": -1
 		}
 	},
@@ -220,6 +308,9 @@
 		},
 		"rail": {
 			"idx": -1
+		},
+		"actionless": {
+			"idx": -1
 		}
 	},
 	"unitAbility": {
@@ -232,6 +323,11 @@
 	},
 	"tribeAbility": {
 		"geology": {
+			"idx": -1
+		}
+	},
+	"playerAbility": {
+		"diggyhole": {
 			"idx": -1
 		}
 	},

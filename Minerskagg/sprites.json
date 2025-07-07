@@ -195,5 +195,23 @@
 	"weapon_club_berserker__": {
 		"pixelsPerUnit": 792,
 		"pivot": [0.4, 0.65]
+	},
+	"yellowshard__": {
+		"pixelsPerUnit": 1480
+	},
+	"purpleshard__": {
+		"pixelsPerUnit": 1480
+	},
+	"blueshard__": {
+		"pixelsPerUnit": 1480
+	},
+	"yellowshard_outline__": {
+		"pixelsPerUnit": 1330
+	},
+	"purpleshard_outline__": {
+		"pixelsPerUnit": 1330
+	},
+	"blueshard_outline__": {
+		"pixelsPerUnit": 1330
 	}
 }
