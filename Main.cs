@@ -22,6 +22,10 @@ public static class Main
     public static void Load(ManualLogSource logger)
     {
         PolyMod.Loader.AddPatchDataType("cityReward", typeof(CityReward));
+        int value = (int)Enum.GetValues(typeof(TileData.EffectType)).Cast<TileData.EffectType>().Last();
+        value++;
+        EnumCache<TileData.EffectType>.AddMapping("railed", (TileData.EffectType)value);
+        EnumCache<TileData.EffectType>.AddMapping("railed", (TileData.EffectType)value);
         Harmony.CreateAndPatchAll(typeof(Main));
         modLogger = logger;
 
@@ -354,16 +358,25 @@ public static class Main
         if (gameState.TryGetUnit(__instance.UnitId, out unitState) && gameState.TryGetPlayer(__instance.PlayerId, out playerState) && gameState.GameLogicData.TryGetData(unitState.type, out unitData))
         {
             TileData unitTile = gameState.Map.GetTile(unitState.coordinates);
-            if (unitTile.improvement != null && gameState.GameLogicData.TryGetData(unitTile.improvement.type, out ImprovementData data) && data.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("depot")) && !unitState.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")))
+            if (unitTile.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")) && !unitState.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")))
             {
-                gameState.GameLogicData.TryGetData(EnumCache<UnitData.Type>.GetType("minecart"), out UnitData wagonData);
                 gameState.ActionStack.Add(new EmbarkAction(__instance.PlayerId, unitTile.coordinates));
                 currentlyWagoning = true;
             }
-            else
+            else if (!unitTile.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")) && unitState.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")) && !unitTile.HasImprovement(ImprovementData.Type.City))
             {
                 gameState.ActionStack.Add(new DisembarkAction(__instance.PlayerId, unitTile.coordinates));
             }
+            // if (unitTile.improvement != null && gameState.GameLogicData.TryGetData(unitTile.improvement.type, out ImprovementData data) && data.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("depot")) && !unitState.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")))
+            // {
+            //     gameState.GameLogicData.TryGetData(EnumCache<UnitData.Type>.GetType("minecart"), out UnitData wagonData);
+            //     gameState.ActionStack.Add(new EmbarkAction(__instance.PlayerId, unitTile.coordinates));
+            //     currentlyWagoning = true;
+            // }
+            // else
+            // {
+            //     gameState.ActionStack.Add(new DisembarkAction(__instance.PlayerId, unitTile.coordinates));
+            // }
         }
     }
 
@@ -401,19 +414,26 @@ public static class Main
     [HarmonyPatch(typeof(TileData), nameof(TileData.GetMovementCost))]
     public static void GetMovementCost(ref int __result, TileData __instance, MapData map, TileData fromTile, PathFinderSettings settings)
     {
-        if (settings.unit != null && settings.unit.UnitData.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")))
+        if (settings.unit != null)
         {
-            __result = 1000;
-            List<TileData> neighbours = map.GetTileNeighbors(__instance.coordinates).ToArray().ToList();
-            neighbours.Add(__instance);
-            foreach (var tileData in neighbours)
+            if (settings.unit.UnitData.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")))
             {
-                if (tileData.improvement != null && settings.gameState.GameLogicData.TryGetData(tileData.improvement.type, out ImprovementData data)
-                    && (data.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("rail")) || data.type == ImprovementData.Type.City))
+                __result = 1000;
+                if (__instance.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")) || __instance.HasImprovement(ImprovementData.Type.City))
                 {
                     __result = 0;
                     return;
                 }
+                // List<TileData> neighbours = map.GetTileNeighbors(__instance.coordinates).ToArray().ToList();
+                // neighbours.Add(__instance);
+                // foreach (var tileData in neighbours)
+                // {
+                //     if (tileData.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")) || tileData.HasImprovement(ImprovementData.Type.City))
+                //     {
+                //         __result = 0;
+                //         return;
+                //     }
+                // }
             }
         }
     }
@@ -521,6 +541,62 @@ public static class Main
         if (tile == null || tile.IsHidden)
         {
             __instance.cityAreaSelection.Hide();
+        }
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(MapDataExtensions), nameof(MapDataExtensions.UpdateRoutes))]
+    private static void MapDataExtensions_UpdateRoutes(GameState gameState, Il2CppSystem.Collections.Generic.List<TileData> changedTiles)
+    {
+        Console.Write("MapDataExtensions_UpdateRoutes");
+        foreach (TileData tileData in gameState.Map.Tiles)
+        {
+            if (tileData.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")))
+            {
+                changedTiles.Add(tileData);
+                foreach (TileData neighbour in gameState.Map.GetTileNeighbors(tileData.coordinates))
+                {
+                    if (neighbour.HasImprovement(ImprovementData.Type.City))
+                    {
+                        neighbour.hasRoute = true;
+                        changedTiles.Add(neighbour);
+                    }
+                }
+                tileData.hasRoute = true;
+            }
+        }
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(BuildAction), nameof(BuildAction.ExecuteDefault))]
+    public static bool BuildAction_ExecuteDefault(BuildAction __instance, GameState gameState)
+    {
+        TileData tile = gameState.Map.GetTile(__instance.Coordinates);
+        if (tile != null && gameState.GameLogicData.TryGetData(__instance.Type, out ImprovementData improvementData) && gameState.TryGetPlayer(__instance.PlayerId, out PlayerState playerState))
+        {
+            if (improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("rail")))
+            {
+                tile.AddEffect(EnumCache<TileData.EffectType>.GetType("railed"));
+                Il2CppSystem.Collections.Generic.List<TileData> changedTiles = new();
+                gameState.UpdateRoutes(changedTiles);
+                // Tile instance = GameManager.GameState.Map.GetTile(tile.coordinates).GetInstance();
+                // instance.RenderTransportPaths();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(GameLogicData), nameof(GameLogicData.CanBuild))]
+    public static void CanBuild(ref bool __result, GameState gameState, TileData tile, PlayerState playerState, ImprovementData improvement)
+    {
+        if (improvement.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("rail")) && __result)
+        {
+            if (tile.hasRoute && tile.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")))
+            {
+                __result = false;
+            }
         }
     }
 }

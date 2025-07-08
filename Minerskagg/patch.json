@@ -162,10 +162,28 @@
 		},
 		"rail": {
 			"cost": 4,
+			"terrainRequirements": [
+				{
+					"terrain": "field"
+				},
+				{
+					"terrain": "forest"
+				}
+			],
+			"improvementAbilities": [
+				"freelance",
+				"rail",
+				"discrete"
+			],
+			"maxLevel": 0,
+			"idx": -1
+		},
+		"railway": {
+			"cost": 4,
 			"range": 1,
 			"improvementAbilities": [
 				"network",
-				"rail",
+				"railway",
 				"depot"
 			],
 			"terrainRequirements": [
@@ -306,10 +324,13 @@
 		"dig": {
 			"idx": -1
 		},
-		"rail": {
+		"railway": {
 			"idx": -1
 		},
 		"actionless": {
+			"idx": -1
+		},
+		"rail": {
 			"idx": -1
 		}
 	},
