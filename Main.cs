@@ -410,8 +410,8 @@ public static class Main
         }
     }
 
-    //[HarmonyPostfix]
-    //[HarmonyPatch(typeof(TileData), nameof(TileData.GetMovementCost))]
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(TileData), nameof(TileData.GetMovementCost))]
     public static void GetMovementCost(ref int __result, TileData __instance, MapData map, TileData fromTile, PathFinderSettings settings)
     {
         if (settings.unit != null)
@@ -548,7 +548,10 @@ public static class Main
     [HarmonyPatch(typeof(MapDataExtensions), nameof(MapDataExtensions.UpdateRoutes))]
     private static bool MapDataExtensions_UpdateRoutes(GameState gameState, Il2CppSystem.Collections.Generic.List<TileData> changedTiles)
     {
-        UpdateRoutes(gameState, changedTiles);
+        //UpdateRoutes(gameState, changedTiles);
+        //return false;
+        //UpdateRoutesV2(gameState, changedTiles);
+        UpdateRoutesV2(gameState, changedTiles); // FUCKING MIDJIWAN CODE ISTG I JUST CANT COMPREHEND HALF OF THIS SHIT PLEASE SOMEONE SEND AMBULANCE IM SERIOUSLY GOING SLOWLY INSANE MY MENTAL HEALTH IS DECLINING AND WITH SUCH PACE IM GONNA GET INTO ASYLUM
         return false;
         // Console.Write("MapDataExtensions_UpdateRoutes");
         // foreach (TileData tileData in gameState.Map.Tiles)
@@ -579,10 +582,19 @@ public static class Main
             if (improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("rail")))
             {
                 tile.AddEffect(EnumCache<TileData.EffectType>.GetType("railed"));
-                Il2CppSystem.Collections.Generic.List<TileData> changedTiles = new();
-                gameState.UpdateRoutes(changedTiles);
-                // Tile instance = GameManager.GameState.Map.GetTile(tile.coordinates).GetInstance();
-                // instance.RenderTransportPaths();
+                Il2CppSystem.Collections.Generic.List<TileData> neighbours = gameState.Map.GetTileNeighbors(tile.coordinates);
+                foreach (TileData tileData in neighbours)
+                {
+                    if (tileData.HasImprovement(ImprovementData.Type.City))
+                    {
+                        tileData.AddEffect(EnumCache<TileData.EffectType>.GetType("railed"));
+                    }
+                }
+
+                Il2CppSystem.Collections.Generic.List<byte> list = new Il2CppSystem.Collections.Generic.List<byte>();
+                list.Add(__instance.PlayerId);
+                gameState.ActionStack.Add(new UpdateCityConnectionsAction(__instance.PlayerId, list));
+                gameState.ActionStack.Add(new UpdateRoutesAction(__instance.PlayerId));
                 return false;
             }
         }
@@ -595,11 +607,158 @@ public static class Main
     {
         if (improvement.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("rail")) && __result)
         {
-            if (tile.hasRoute && tile.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")))
+            if (tile.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")))
             {
                 __result = false;
             }
         }
+    }
+
+    public static void UpdateRoutesV2(GameState gameState, Il2CppSystem.Collections.Generic.List<TileData> changedTiles)
+    {
+        if (gameState == null || gameState.Map == null)
+            return;
+        var map = gameState.Map;
+
+        Il2CppSystem.Collections.Generic.List<TileData> list = new Il2CppSystem.Collections.Generic.List<TileData>();
+        map.ResetRoutes(list);
+
+        var empireTiles = new Il2CppSystem.Collections.Generic.List<TileData>();
+        var rails = new Il2CppSystem.Collections.Generic.List<TileData>();
+        var playerRouteOpeners = new Il2CppSystem.Collections.Generic.List<TileData>();
+        var routeOpeners = new Il2CppSystem.Collections.Generic.List<TileData>();
+
+        foreach (PlayerState player in gameState.PlayerStates)
+        {
+            if (player == null || player.Id == 255)
+                continue;
+            map.GetPlayerEmpireTiles(player.Id, empireTiles);
+            rails.Clear();
+            playerRouteOpeners.Clear();
+            routeOpeners.Clear();
+            Il2CppSystem.Collections.Generic.List<Polytopia.Data.TerrainData> unlockedMovements = gameState.GameLogicData.GetUnlockedMovements(player);
+            
+            foreach (var tileData in map.Tiles)
+            {
+                if (tileData.owner == 0 && tileData.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")))
+                {
+                    rails.Add(tileData);
+                }
+            }
+            foreach (TileData tile in empireTiles)
+            {
+                if (tile.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")))
+                {
+                    rails.Add(tile);
+                }
+                if (tile.improvement != null && gameState.GameLogicData.TryGetData(tile.improvement.type, out ImprovementData improvementData))
+                {
+                    if (improvementData.IsRouteOpener())
+                    {
+                        playerRouteOpeners.Add(tile);
+                    }
+                    if (improvementData.type == ImprovementData.Type.City)
+                    {
+                        routeOpeners.Add(tile);
+                    }
+                }
+            }
+            for (int i = 0; i < rails.Count; i++)
+            {
+                TileData sourceTile = rails[i];
+                if (sourceTile.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")))
+                {
+                    for (int j = i + 1; j < rails.Count; j++)
+                    {
+                        TileData targetTile = rails[j];
+                        FindPathBetweenRoutersV2(sourceTile, targetTile, unlockedMovements, player, gameState, changedTiles);
+                    }
+                }
+            }
+            for (int i = 0; i < playerRouteOpeners.Count; i++)
+                {
+                    TileData sourceTile = playerRouteOpeners[i];
+                    if (gameState.GameLogicData.TryGetData(sourceTile.improvement.type, out ImprovementData improvementData2))
+                    {
+                        for (int j = i + 1; j < playerRouteOpeners.Count; j++)
+                        {
+                            TileData targetTile = playerRouteOpeners[j];
+                            FindPathBetweenRouters(sourceTile, targetTile, unlockedMovements, player, gameState, changedTiles);
+                        }
+                        if (improvementData2.HasAbility(ImprovementAbility.Type.Network))
+                        {
+                            ushort num = 0;
+                            for (int k = 0; k < routeOpeners.Count; k++)
+                            {
+                                TileData tile = routeOpeners[k];
+                                if (FindPathBetweenRouters(sourceTile, tile, unlockedMovements, player, gameState, changedTiles))
+                                {
+                                    num += 1;
+                                }
+                            }
+                        }
+                    }
+                }
+        }
+
+        foreach (var tile in list)
+        {
+            if (!tile.hasRoute && !changedTiles.Contains(tile))
+            {
+                changedTiles.Add(tile);
+            }
+
+            tile.hadRoute = false;
+        }
+    }
+
+    public static bool FindPathBetweenRoutersV2(
+        TileData origin,
+        TileData destination,
+        Il2CppSystem.Collections.Generic.List<Polytopia.Data.TerrainData> allowedTerrain,
+        PlayerState player,
+        GameState gameState,
+        Il2CppSystem.Collections.Generic.List<TileData> changedTiles
+    )
+    {
+        if (origin == null || destination == null || gameState == null)
+            return false;
+        var logicData = gameState.GameLogicData;
+        if (logicData == null)
+            return false;
+        int distance = MapDataExtensions.ChebyshevDistance(origin.coordinates, destination.coordinates);
+        if (1 < distance)
+        {
+            return false;
+        }
+        var settings = PathFinderSettings.CreateRouterSettings(player, allowedTerrain, gameState.Version, gameState);
+        Il2CppSystem.Collections.Generic.List<WorldCoordinates> path = PathFinder.GetPath(
+            gameState.Map,
+            origin.coordinates,
+            destination.coordinates,
+            1,
+            settings
+        );
+        if (path == null || path.Count < 1)
+            return false;
+        foreach (var coord in path)
+        {
+            int idx = MapDataExtensions.GetTileIndex(gameState.Map, coord);
+            if (idx < 0)
+                continue;
+
+            var tile = gameState.Map.Tiles[idx];
+            if (tile == null)
+                continue;
+
+            if (!tile.hasRoute)
+            {
+                tile.hasRoute  = true;
+                if (!changedTiles.Contains(tile))
+                    changedTiles.Add(tile);
+            }
+        }
+        return true;
     }
 
     public static void UpdateRoutes(GameState gameState, Il2CppSystem.Collections.Generic.List<TileData> changedTiles)
@@ -704,17 +863,22 @@ public static class Main
         Console.Write("Range: " + originImp.range);
         if (originImp.range < distance)
             return false;
-        Console.Write("4");
         var usableTerrain = new Il2CppSystem.Collections.Generic.List<Polytopia.Data.TerrainData>();
-        foreach (var terrain in originImp.routes)
+        if (destImp.type != ImprovementData.Type.City)
         {
-            Console.Write(terrain.type);
-            if (destImp.routes.Contains(terrain)) // IT BREAKS THERE CUZ IT CHECKS IF IMPROVEMENT ROUTES MATCH BUT LIKE WE HAVE CITIES YK YEAH 
-                usableTerrain.Add(terrain);
-        }
+            foreach (var terrain in originImp.routes)
+            {
+                if (destImp.routes.Contains(terrain))
+                    usableTerrain.Add(terrain);
+            }
 
-        if (usableTerrain.Count == 0)
-            return false;
+            if (usableTerrain.Count == 0)
+                return false;
+        }
+        else
+        {
+            usableTerrain = originImp.routes;
+        }
         Console.Write("5");
         var settings = PathFinderSettings.CreateRouterSettings(player, usableTerrain, gameState.Version, gameState);
 

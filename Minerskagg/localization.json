@@ -22,15 +22,15 @@
 	},
 	"building_names_diggyyellow": {
 		"English": "Diggyhole (Yellow Shard)",
-		"Russian": "Карьер"
+		"Russian": "Карьер (Желтый Кристал)"
 	},
 	"building_names_diggypurple": {
 		"English": "Diggyhole (Purple Shard)",
-		"Russian": "Карьер"
+		"Russian": "Карьер (Фиолетовый Кристал)"
 	},
 	"building_names_diggyblue": {
 		"English": "Diggyhole (Blue Shard)",
-		"Russian": "Карьер"
+		"Russian": "Карьер (Синий Кристал)"
 	},
 	"building_names_factory": {
 		"English": "Factory",
@@ -44,9 +44,13 @@
 		"English": "Station",
 		"Russian": "Станция"
 	},
-	"building_names_rail": {
+	"building_names_railway": {
 		"English": "Station",
 		"Russian": "Станция"
+	},
+	"building_names_rail": {
+		"English": "Rails",
+		"Russian": "Рельсы"
 	},
 	"unit_names_berserker": {
 		"English": "Berserk",
@@ -55,5 +59,17 @@
 	"unit_names_dynamiter": {
 		"English": "Dynamiter",
 		"Russian": "Подрывник"
+	},
+	"player_abilities_diggyhole": {
+		"English": "Diggyhole",
+		"Russian": "Карьер"
+	},
+	"tooltip_ability_diggyhole": {
+		"English": "Produces 1 population. This building digs out the resource underneath it. Must be on tile a with Yellow, Purple or Blue shard.",
+		"Russian": "Приносит 1 ед. населения. Это здание выкапывает ресурс под собой. Можно построить только на клетке, где есть Желтый, Фиолетовый или Синий кристал."
+	},
+	"unit_names_drill": {
+		"English": "Drill",
+		"Russian": "Дрель"
 	}
 }

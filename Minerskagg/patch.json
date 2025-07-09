@@ -248,6 +248,9 @@
 			"abilityUnlocks": [
 				"diggyhole"
 			],
+			"improvementUnlocks": [
+				"diggyyellow"
+			],
 			"cost": 2,
 			"idx": -1
 		}
