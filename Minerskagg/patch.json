@@ -4,7 +4,8 @@
 			"color": 15713321,
 			"language": "az,bar,bryn,düm,girt,hall,kar,khäz,kol,kruk,lok,rüdh,ruf,und,vorn,zak",
 			"unitOverrides": {
-				"catapult": "dynamiter"
+				"catapult": "dynamiter",
+				"giant": "golem"
 			},
 			"techOverrides": {
 				"mining": "excavations"
@@ -218,12 +219,27 @@
 			],
 			"idx": -1
 		},
+		"exploretile": {
+			"maxLevel": 0,
+			"shouldSuggestUnlock": true,
+			"idx": -1
+		},
+		"doublework": {
+			"improvementAbilities": [
+				"discrete",
+				"costsblue"
+			],
+			"maxLevel": 0,
+			"idx": -1
+		},
 		"restoreactions": {
 			"improvementAbilities": [
-				"consumed",
 				"freelance",
 				"manual",
-				"actionless"
+				"actionless",
+				"restoreactions",
+				"discrete",
+				"costsyellow"
 			],
 			"maxLevel": 0,
 			"shouldSuggestUnlock": true,
@@ -261,7 +277,9 @@
 				"diggypurple",
 				"diggyblue",
 				"usedepot",
-				"unusedepot"
+				"unusedepot",
+				"restoreactions",
+				"doublework"
 			],
 			"idx": -1
 		},
@@ -314,6 +332,24 @@
 			"promotionLimit": 0,
 			"idx": -1,
 			"prefab": "boat"
+		},
+		"golem": {
+			"health": 400,
+			"defence": 30,
+			"movement": 1,
+			"range": 1,
+			"attack": 50,
+			"cost": 10,
+			"hidden": true,
+			"weapon": 7,
+			"unitAbilities": [
+				"static",
+				"land",
+				"push"
+			],
+			"promotionLimit": 0,
+			"prefab": "transportship",
+			"idx": -1
 		}
 	},
 	"resourceData": {
@@ -359,6 +395,18 @@
 		},
 		"rail": {
 			"idx": -1
+		},
+		"restoreactions": {
+			"idx": -1
+		},
+		"costspurple": {
+			"idx": -1
+		},
+		"costsblue": {
+			"idx": -1
+		},
+		"costsyellow": {
+			"idx": -1
 		}
 	},
 	"unitAbility": {
@@ -366,6 +414,9 @@
 			"idx": -1
 		},
 		"wagon": {
+			"idx": -1
+		},
+		"push": {
 			"idx": -1
 		}
 	},

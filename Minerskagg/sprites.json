@@ -217,5 +217,13 @@
 	},
 	"blueshard_outline__": {
 		"pixelsPerUnit": 1330
+	},
+	"boat_golem__": {
+		"pixelsPerUnit": 1056,
+		"pivot": [0.5, 0.5]
+	},
+	"boat_golem_outline__": {
+		"pixelsPerUnit": 975,
+		"pivot": [0.5, 0.5]
 	}
 }

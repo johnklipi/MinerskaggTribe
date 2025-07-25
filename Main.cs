@@ -1,23 +1,18 @@
-﻿using AsmResolver.PE.Win32Resources.Builder;
-using BepInEx.Logging;
-using EnumsNET;
+﻿using BepInEx.Logging;
 using HarmonyLib;
-using Il2CppSystem.Runtime.Remoting.Messaging;
 using Polytopia.Data;
-using UnityEngine;
 
 namespace PolytopiaMinerskaggTribe;
 
-public static class Main
+public static class Main // probably the WORST FUCKING CODE I'VE EVER WRITTEN.
 {
-    private static string stateMarker = "Minerskagg";
-    private static ManualLogSource? modLogger;
+    internal static string stateMarker = "Minerskagg";
+    internal static ManualLogSource? modLogger;
     // private static Dictionary<int, string> shards = new();
-    private static Dictionary<int, ShardsInfo> shards = new();
-    private record ShardsInfo(int yellowShardCount, int purpleShardCount, int blueShardCount);
-    private static Transform? yellowShardContainer = null;
-    private static Transform? purpleShardContainer = null;
-    private static Transform? blueShardContainer = null; private static bool currentlyWagoning = false;
+    internal static Dictionary<int, ShardsInfo> shards = new();
+    internal record ShardsInfo(int yellowShardCount, int purpleShardCount, int blueShardCount);
+    internal static bool currentlyWagoning = false;
+    internal static WorldCoordinates? chosenTileCoordinates = null;
 
     public static void Load(ManualLogSource logger)
     {
@@ -26,147 +21,13 @@ public static class Main
         value++;
         EnumCache<TileData.EffectType>.AddMapping("railed", (TileData.EffectType)value);
         EnumCache<TileData.EffectType>.AddMapping("railed", (TileData.EffectType)value);
+        value++;
+        EnumCache<TileData.EffectType>.AddMapping("doubled", (TileData.EffectType)value);
+        EnumCache<TileData.EffectType>.AddMapping("doubled", (TileData.EffectType)value);
         Harmony.CreateAndPatchAll(typeof(Main));
+        Harmony.CreateAndPatchAll(typeof(UI));
         modLogger = logger;
 
-    }
-
-    // [HarmonyPostfix]
-    // [HarmonyPatch(typeof(GameState), nameof(GameState.Serialize))]
-    // public static void GameState_Serialize(Il2CppSystem.IO.BinaryWriter writer, int version)
-    // {
-    //     writer.Write(stateMarker);
-    //     writer.Write((ushort)shards.Count);
-
-    //     foreach (var kvp in shards)
-    //     {
-    //         writer.Write(kvp.Key);
-    //         writer.Write(kvp.Value);
-    //     }
-    // }
-
-    // [HarmonyPostfix]
-    // [HarmonyPatch(typeof(GameState), nameof(GameState.Deserialize))]
-    // public static void GameState_Deserialize(Il2CppSystem.IO.BinaryReader reader, int version)
-    // {
-    //     var stream = reader.BaseStream;
-    //     long oldPos = stream.Position;
-
-    //     try
-    //     {
-    //         if (stream.Length - stream.Position < 8)
-    //             return;
-    //         string marker = reader.ReadString();
-    //         if (marker != stateMarker)
-    //         {
-    //             stream.Position = oldPos;
-    //             return;
-    //         }
-    //         if (stream.Length - stream.Position < 2)
-    //             return;
-
-    //         ushort count = reader.ReadUInt16();
-    //         shards = new Dictionary<int, string>(count);
-
-    //         for (int i = 0; i < count; i++)
-    //         {
-    //             if (stream.Position >= stream.Length)
-    //                 throw new EndOfStreamException();
-
-    //             int key = reader.ReadInt32();
-
-    //             if (stream.Position >= stream.Length)
-    //                 throw new EndOfStreamException();
-
-    //             string value = reader.ReadString();
-
-    //             shards[key] = value;
-    //         }
-    //     }
-    //     catch (System.IO.EndOfStreamException)
-    //     {
-    //         stream.Position = oldPos;
-    //         shards?.Clear();
-    //     }
-    //     catch
-    //     {
-    //         stream.Position = oldPos;
-    //     }
-    // }
-
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(ResourceBar), nameof(ResourceBar.OnEnable))]
-    private static void OnEnable(ResourceBar __instance)
-    {
-        Transform? topRowContainer = null;
-        for (int i = 0; i < __instance.transform.childCount; i++)
-        {
-            Transform resourceBarChild = __instance.transform.GetChild(i);
-            if (resourceBarChild.gameObject.name == "Top Row Container")
-            {
-                topRowContainer = resourceBarChild;
-            }
-        }
-        Transform? topRow = null;
-        if (topRowContainer != null)
-        {
-            for (int i = 0; i < topRowContainer.childCount; i++)
-            {
-                Transform topRowContainerChild = topRowContainer.GetChild(i);
-                if (topRowContainerChild.gameObject.name == "Top Row")
-                {
-                    topRow = topRowContainerChild;
-                }
-            }
-        }
-        if (topRow != null)
-        {
-            for (int i = 0; i < topRow.childCount; i++)
-            {
-                Transform topRowChild = topRow.GetChild(i);
-                if (topRowChild.gameObject.name == "CurrencyContainer")
-                {
-                    yellowShardContainer = GameObject.Instantiate(topRowChild, topRow);
-                    yellowShardContainer.gameObject.name = "Yellow Shards";
-                    UpdateShardIncome(yellowShardContainer, 0);
-                    purpleShardContainer = GameObject.Instantiate(topRowChild, topRow);
-                    purpleShardContainer.gameObject.name = "Purple Shards";
-                    UpdateShardIncome(purpleShardContainer, 0);
-                    blueShardContainer = GameObject.Instantiate(topRowChild, topRow);
-                    blueShardContainer.gameObject.name = "Blue Shards";
-                    UpdateShardIncome(blueShardContainer, 0);
-                }
-            }
-        }
-    }
-
-    private static CurrencyContainer GetCurrencyContainer(Transform container)
-    {
-        return container.GetComponent<CurrencyContainer>();
-    }
-
-    private static void UpdateShardIncome(Transform container, int income)
-    {
-        CurrencyContainer currencyContainer = container.GetComponent<CurrencyContainer>();
-        currencyContainer.headerLabel.text = $"{container.gameObject.name} (+{income})";
-    }
-
-    private static void UpdateShardCount(Transform container, int count)
-    {
-        CurrencyContainer currencyContainer = container.GetComponent<CurrencyContainer>();
-        currencyContainer.resourceWidget.label.text = count.ToString();
-    }
-
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(ResourceBar), nameof(ResourceBar.OnDisable))]
-    private static void OnDisable(ResourceBar __instance)
-    {
-        if (yellowShardContainer != null)
-            GameObject.Destroy(yellowShardContainer);
-        if (purpleShardContainer != null)
-            GameObject.Destroy(purpleShardContainer);
-        if (blueShardContainer != null)
-            GameObject.Destroy(blueShardContainer);
     }
 
     [HarmonyPostfix]
@@ -197,7 +58,6 @@ public static class Main
                     if (tribeData.HasAbility(EnumCache<TribeAbility.Type>.GetType("geology")))
                     {
                         long resource = random.NextInt64(3);
-                        // Console.Write(resource);
                         ResourceData.Type resourceType = ResourceData.Type.None;
                         switch (resource)
                         {
@@ -219,13 +79,23 @@ public static class Main
     }
 
     [HarmonyPostfix]
+    [HarmonyPatch(typeof(TileDataExtensions), nameof(TileDataExtensions.CalculateWork), typeof(TileData), typeof(GameState), typeof(int))]
+    public static void TileDataExtensions_CalculateWork(ref int __result, TileData tile, GameState gameState, int improvementLevel)
+    {
+        if (tile.HasEffect(EnumCache<TileData.EffectType>.GetType("doubled")))
+        {
+            __result *= 2;
+        }
+    }
+
+    [HarmonyPostfix]
     [HarmonyPatch(typeof(StartTurnAction), nameof(StartTurnAction.ExecuteDefault))]
     private static void StartTurnAction_ExecuteDefault(StartTurnAction __instance, GameState gameState)
     {
         // modLogger.LogInfo(__instance.PlayerId);
         foreach (TileData tileData in gameState.Map.tiles)
         {
-            if (tileData.owner == __instance.PlayerId)
+            if (tileData.owner == __instance.PlayerId && gameState.TryGetPlayer(__instance.PlayerId, out PlayerState playerState))
             {
                 if (tileData.improvement != null)
                 {
@@ -234,22 +104,71 @@ public static class Main
                         if (improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("dig")) && tileData.resource != null)
                         {
                             string resourceName = EnumCache<ResourceData.Type>.GetName(tileData.resource.type);
-                            TileData rulingTile = gameState.Map.GetTile(tileData.rulingCityCoordinates);
-                            if (rulingTile.improvement != null)
+                            TileData capitalTile = gameState.Map.GetTile(playerState.startTile);
+                            if (capitalTile.improvement != null)
                             {
                                 if (EnumCache<CityReward>.TryGetType(resourceName, out CityReward reward))
                                 {
-                                    rulingTile.improvement.AddReward(reward);
+                                    capitalTile.improvement.AddReward(reward);
+                                    if (tileData.HasEffect(EnumCache<TileData.EffectType>.GetType("doubled")))
+                                    {
+                                        capitalTile.improvement.AddReward(reward);
+                                    }
                                     // Console.Write("Adding reward OF TYPE " + resourceName);
                                     // Console.Write("For " + rulingTile.improvement.type);
                                     // Console.Write("For " + rulingTile.coordinates);
                                 }
                             }
                         }
+                        if (tileData.HasEffect(EnumCache<TileData.EffectType>.GetType("doubled")))
+                        {
+                            tileData.RemoveEffect(EnumCache<TileData.EffectType>.GetType("doubled"));
+                        }
                     }
                 }
             }
         }
+    }
+
+    internal static void DeductShards(byte playerId, CityReward shardType, int cost)
+    {
+        ShardsInfo info = shards[playerId];
+        int yellowShardCount = info.yellowShardCount;
+        int purpleShardCount = info.purpleShardCount;
+        int blueShardCount = info.blueShardCount;
+        if (GameManager.GameState.TryGetPlayer(playerId, out PlayerState playerState))
+        {
+            TileData tileData = GameManager.GameState.Map.GetTile(playerState.startTile);
+            if (tileData.improvement != null)
+            {
+                if (tileData.improvement.type == ImprovementData.Type.City)
+                {
+                    if (tileData.improvement.rewards != null)
+                    {
+                        for (int i = 0; i < cost; i++)
+                        {
+                            tileData.improvement.rewards.Remove(shardType);
+                            if (shardType == EnumCache<CityReward>.GetType("yellowshard"))
+                            {
+                                yellowShardCount--;
+                            }
+                            if (shardType == EnumCache<CityReward>.GetType("purpleshard"))
+                            {
+                                purpleShardCount--;
+                            }
+                            if (shardType == EnumCache<CityReward>.GetType("blueshard"))
+                            {
+                                blueShardCount--;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        shards[playerId] = new ShardsInfo(yellowShardCount, purpleShardCount, blueShardCount);
+        UI.UpdateShardCount(UI.yellowShardContainer!, yellowShardCount);
+        UI.UpdateShardCount(UI.purpleShardContainer!, purpleShardCount);
+        UI.UpdateShardCount(UI.blueShardContainer!, blueShardCount);
     }
 
     [HarmonyPostfix]
@@ -264,29 +183,27 @@ public static class Main
         int blueShardCount = 0;
         if (GameManager.GameState.TryGetPlayer(playerId, out PlayerState playerState))
         {
-            foreach (TileData tileData in GameManager.GameState.Map.tiles)
+            TileData tileData = GameManager.GameState.Map.GetTile(playerState.startTile);
+            if (tileData.improvement != null)
             {
-                if (tileData.owner == playerId && tileData.improvement != null)
+                if (tileData.improvement.type == ImprovementData.Type.City)
                 {
-                    if (tileData.improvement.type == ImprovementData.Type.City)
+                    if (tileData.improvement.rewards != null)
                     {
-                        if (tileData.improvement.rewards != null)
+                        foreach (var reward in tileData.improvement.rewards)
                         {
-                            foreach (var reward in tileData.improvement.rewards)
+                            // Console.Write(reward);
+                            if (reward == EnumCache<CityReward>.GetType("yellowshard"))
                             {
-                                // Console.Write(reward);
-                                if (reward == EnumCache<CityReward>.GetType("yellowshard"))
-                                {
-                                    yellowShardCount++;
-                                }
-                                if (reward == EnumCache<CityReward>.GetType("purpleshard"))
-                                {
-                                    purpleShardCount++;
-                                }
-                                if (reward == EnumCache<CityReward>.GetType("blueshard"))
-                                {
-                                    blueShardCount++;
-                                }
+                                yellowShardCount++;
+                            }
+                            if (reward == EnumCache<CityReward>.GetType("purpleshard"))
+                            {
+                                purpleShardCount++;
+                            }
+                            if (reward == EnumCache<CityReward>.GetType("blueshard"))
+                            {
+                                blueShardCount++;
                             }
                         }
                     }
@@ -294,9 +211,9 @@ public static class Main
             }
         }
         shards[playerId] = new ShardsInfo(yellowShardCount, purpleShardCount, blueShardCount);
-        UpdateShardCount(yellowShardContainer, yellowShardCount);
-        UpdateShardCount(purpleShardContainer, purpleShardCount);
-        UpdateShardCount(blueShardContainer, blueShardCount);
+        UI.UpdateShardCount(UI.yellowShardContainer!, yellowShardCount);
+        UI.UpdateShardCount(UI.purpleShardContainer!, purpleShardCount);
+        UI.UpdateShardCount(UI.blueShardContainer!, blueShardCount);
     }
 
     [HarmonyPostfix]
@@ -319,39 +236,51 @@ public static class Main
         {
             foreach (TileData tileData in GameManager.GameState.Map.tiles)
             {
-                if (tileData.owner == playerId && tileData.improvement != null)
+                int shardsToAdd = 1;
+                if (tileData.HasEffect(EnumCache<TileData.EffectType>.GetType("doubled")))
                 {
-                    if (GameManager.GameState.GameLogicData.TryGetData(tileData.improvement.type, out ImprovementData improvementData))
+                    shardsToAdd *= 2;
+                }
+                if (tileData.owner == playerId && tileData.improvement != null)
                     {
-                        if (improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("dig")) && tileData.resource != null)
+                        if (GameManager.GameState.GameLogicData.TryGetData(tileData.improvement.type, out ImprovementData improvementData))
                         {
-                            if (tileData.resource.type == EnumCache<ResourceData.Type>.GetType("yellowshard"))
+                            if (improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("dig")) && tileData.resource != null)
                             {
-                                yellowShardCount++;
-                            }
-                            if (tileData.resource.type == EnumCache<ResourceData.Type>.GetType("purpleshard"))
-                            {
-                                purpleShardCount++;
-                            }
-                            if (tileData.resource.type == EnumCache<ResourceData.Type>.GetType("blueshard"))
-                            {
-                                blueShardCount++;
+                                if (tileData.resource.type == EnumCache<ResourceData.Type>.GetType("yellowshard"))
+                                {
+                                    yellowShardCount += shardsToAdd;
+                                }
+                                if (tileData.resource.type == EnumCache<ResourceData.Type>.GetType("purpleshard"))
+                                {
+                                    purpleShardCount += shardsToAdd;
+                                }
+                                if (tileData.resource.type == EnumCache<ResourceData.Type>.GetType("blueshard"))
+                                {
+                                    blueShardCount += shardsToAdd;
+                                }
                             }
                         }
                     }
-                }
             }
         }
-        UpdateShardIncome(yellowShardContainer, yellowShardCount);
-        UpdateShardIncome(purpleShardContainer, purpleShardCount);
-        UpdateShardIncome(blueShardContainer, blueShardCount);
+        UI.UpdateShardIncome(UI.yellowShardContainer!, yellowShardCount);
+        UI.UpdateShardIncome(UI.purpleShardContainer!, purpleShardCount);
+        UI.UpdateShardIncome(UI.blueShardContainer!, blueShardCount);
+    }
+
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(MoveCommand), nameof(MoveCommand.Execute))]
+    public static bool MoveCommand_Execute(MoveCommand __instance, GameState gameState)
+    {
+        return true;
     }
 
     [HarmonyPostfix]
     [HarmonyPatch(typeof(MoveAction), nameof(MoveAction.ExecuteDefault))]
     private static void MoveAction_ExecuteDefault(MoveAction __instance, GameState gameState)
     {
-        Console.Write("MoveAction_ExecuteDefault");
         UnitState unitState;
         PlayerState playerState;
         UnitData unitData;
@@ -392,48 +321,6 @@ public static class Main
         if (__result && unitData.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")))
         {
             __result = false;
-        }
-    }
-
-    //[HarmonyPostfix]
-    //[HarmonyPatch(typeof(TileData), nameof(TileData.GetMovementCost))]
-    public static void GetMovementCost(ref int __result, TileData __instance, MapData map, TileData fromTile, PathFinderSettings settings)
-    {
-        if (settings.unit != null)
-        {
-            if (settings.unit.UnitData.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")))
-            {
-                __result = 1000;
-                if (__instance.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")))
-                {
-                    __result = 0;
-                    return;
-                }
-                // List<TileData> neighbours = map.GetTileNeighbors(__instance.coordinates).ToArray().ToList();
-                // neighbours.Add(__instance);
-                // foreach (var tileData in neighbours)
-                // {
-                //     if (tileData.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")) || tileData.HasImprovement(ImprovementData.Type.City))
-                //     {
-                //         __result = 0;
-                //         return;
-                //     }
-                // }
-            }
-        }
-    }
-
-    //[HarmonyPostfix]
-    //[HarmonyPatch(typeof(PathFinder), nameof(PathFinder.IsAllowedToFinishOnTile))]
-    private static void IsAllowedToFinishOnTile(ref bool __result, PathFinderSettings settings, TileData tile)
-    {
-        UnitState unit = tile.GetUnit(settings.gameState, settings.playerState.Id, false);
-        if (unit != null)
-        {
-            if (unit.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")) && !tile.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")))
-            {
-                __result = false;
-            }
         }
     }
 
@@ -533,73 +420,12 @@ public static class Main
         return;
     }
 
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(ClientInteraction), nameof(ClientInteraction.SelectTile))]
-    public static void ClientInteraction_SelectTile(ClientInteraction __instance, Tile tile)
-    {
-        if (tile.IsHidden)
-        {
-            __instance.SelectTileInternal(tile);
-            // CameraController.Instance.RevealTile(__instance.selectedTile, true, 1f, true, false, null);
-        }
-    }
-
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(InteractionBar), nameof(InteractionBar.OnTileSelected))]
-    private static bool InteractionBar_OnTileSelected(InteractionBar __instance, Tile tile)
-    {
-        Console.Write("InteractionBar_OnTileSelected");
-        if (tile == null || tile.IsHidden)
-        {
-            __instance.SetMode(InteractionBar.Mode.None);
-            __instance.SetTile(tile);
-            __instance.building = null;
-            __instance.unit = null;
-            __instance.Refresh();
-            Console.Write("false");
-            return false;
-        }
-        Console.Write("true");
-        return true;
-    }
-
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(SelectionIndicator), nameof(SelectionIndicator.OnTileSelected))]
-    private static void SelectionIndicator_OnTileSelected(SelectionIndicator __instance, Tile tile)
-    {
-        Console.Write("SelectionIndicator_OnTileSelected");
-        if (tile == null || tile.IsHidden)
-        {
-            __instance.cityAreaSelection.Hide();
-        }
-    }
-
     [HarmonyPrefix]
     [HarmonyPatch(typeof(MapDataExtensions), nameof(MapDataExtensions.UpdateRoutes))]
     private static bool MapDataExtensions_UpdateRoutes(GameState gameState, Il2CppSystem.Collections.Generic.List<TileData> changedTiles)
     {
-        //UpdateRoutes(gameState, changedTiles);
-        //return false;
-        //UpdateRoutesV2(gameState, changedTiles);
         UpdateRoutesV2(gameState, changedTiles); // FUCKING MIDJIWAN CODE ISTG I JUST CANT COMPREHEND HALF OF THIS SHIT PLEASE SOMEONE SEND AMBULANCE IM SERIOUSLY GOING SLOWLY INSANE MY MENTAL HEALTH IS DECLINING AND WITH SUCH PACE IM GONNA GET INTO ASYLUM
         return false;
-        // Console.Write("MapDataExtensions_UpdateRoutes");
-        // foreach (TileData tileData in gameState.Map.Tiles)
-        // {
-        //     if (tileData.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")))
-        //     {
-        //         changedTiles.Add(tileData);
-        //         foreach (TileData neighbour in gameState.Map.GetTileNeighbors(tileData.coordinates))
-        //         {
-        //             if (neighbour.HasImprovement(ImprovementData.Type.City))
-        //             {
-        //                 neighbour.hasRoute = true;
-        //                 changedTiles.Add(neighbour);
-        //             }
-        //         }
-        //         tileData.hasRoute = true;
-        //     }
-        // }
     }
 
     [HarmonyPrefix]
@@ -609,24 +435,46 @@ public static class Main
         TileData tile = gameState.Map.GetTile(__instance.Coordinates);
         if (tile != null && gameState.GameLogicData.TryGetData(__instance.Type, out ImprovementData improvementData) && gameState.TryGetPlayer(__instance.PlayerId, out PlayerState playerState))
         {
-            if (improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("rail")))
+            if (improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("costspurple")))
             {
-                tile.AddEffect(EnumCache<TileData.EffectType>.GetType("railed"));
-                Il2CppSystem.Collections.Generic.List<TileData> neighbours = gameState.Map.GetTileNeighbors(tile.coordinates);
-                foreach (TileData tileData in neighbours)
-                {
-                    if (tileData.HasImprovement(ImprovementData.Type.City))
-                    {
-                        tileData.AddEffect(EnumCache<TileData.EffectType>.GetType("railed"));
-                    }
-                }
-
-                Il2CppSystem.Collections.Generic.List<byte> list = new Il2CppSystem.Collections.Generic.List<byte>();
-                list.Add(__instance.PlayerId);
-                gameState.ActionStack.Add(new UpdateCityConnectionsAction(__instance.PlayerId, list));
-                gameState.ActionStack.Add(new UpdateRoutesAction(__instance.PlayerId));
+                DeductShards(__instance.PlayerId, EnumCache<CityReward>.GetType("purpleshard"), 5);
+            }
+            if (improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("costsblue")))
+            {
+                DeductShards(__instance.PlayerId, EnumCache<CityReward>.GetType("blueshard"), 5);
+            }
+            if (improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("costsyellow")))
+            {
+                DeductShards(__instance.PlayerId, EnumCache<CityReward>.GetType("yellowshard"), 5);
+            }
+            if (__instance.Type == EnumCache<ImprovementData.Type>.GetType("exploretile"))
+            {
+                gameState.ActionStack.Add(new ExploreAction(__instance.PlayerId, tile.coordinates));
                 return false;
             }
+            if (__instance.Type == EnumCache<ImprovementData.Type>.GetType("doublework"))
+            {
+                tile.AddEffect(EnumCache<TileData.EffectType>.GetType("doubled"));
+                return false;
+            }
+            if (improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("rail")))
+                {
+                    tile.AddEffect(EnumCache<TileData.EffectType>.GetType("railed"));
+                    Il2CppSystem.Collections.Generic.List<TileData> neighbours = gameState.Map.GetTileNeighbors(tile.coordinates);
+                    foreach (TileData tileData in neighbours)
+                    {
+                        if (tileData.HasImprovement(ImprovementData.Type.City))
+                        {
+                            tileData.AddEffect(EnumCache<TileData.EffectType>.GetType("railed"));
+                        }
+                    }
+
+                    Il2CppSystem.Collections.Generic.List<byte> list = new Il2CppSystem.Collections.Generic.List<byte>();
+                    list.Add(__instance.PlayerId);
+                    gameState.ActionStack.Add(new UpdateCityConnectionsAction(__instance.PlayerId, list));
+                    gameState.ActionStack.Add(new UpdateRoutesAction(__instance.PlayerId));
+                    return false;
+                }
             UnitState unit = tile.unit;
             if (unit != null)
             {
@@ -636,6 +484,7 @@ public static class Main
                     {
                         gameState.ActionStack.Add(new EmbarkAction(__instance.PlayerId, tile.coordinates));
                         currentlyWagoning = true;
+                        return false;
                     }
                 }
                 else if (improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("dedepot")))
@@ -644,6 +493,19 @@ public static class Main
                     {
                         gameState.ActionStack.Add(new DisembarkAction(__instance.PlayerId, tile.coordinates));
                     }
+                    return false;
+                }
+                if (improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("restoreactions")))
+                {
+                    if (unit.attacked)
+                    {
+                        unit.attacked = false;
+                    }
+                    else if (unit.moved)
+                    {
+                        unit.moved = false;
+                    }
+                    return false;
                 }
             }
         }
@@ -651,15 +513,89 @@ public static class Main
     }
 
     [HarmonyPostfix]
+    [HarmonyPatch(typeof(BuildAction), nameof(BuildAction.ExecuteDefault))]
+    public static void BuildAction_ExecuteDefault_Postfix(BuildAction __instance, GameState gameState)
+    {
+        TileData tile = gameState.Map.GetTile(__instance.Coordinates);
+        ImprovementData improvementData;
+        PlayerState playerState;
+        if (tile != null && gameState.GameLogicData.TryGetData(__instance.Type, out improvementData)
+            && gameState.TryGetPlayer(__instance.PlayerId, out playerState)
+            && __instance.DeductCost && UsesShards(improvementData))
+        {
+            playerState.Currency += improvementData.GetCurrencyCost();
+        }
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(BuildCommand), nameof(BuildCommand.IsValid))]
+    public static void BuildCommand_IsValid(ref bool __result, BuildCommand __instance, GameState state, ref string validationError)
+    {
+        if (!__result && __instance.Type == EnumCache<ImprovementData.Type>.GetType("exploretile"))
+        {
+            Console.Write(validationError);
+            __result = true;
+        }
+        if (__result && state.GameLogicData.TryGetData(__instance.Type, out ImprovementData improvementData) && UsesShards(improvementData))
+            {
+                ShardsInfo shardInfo = shards[__instance.PlayerId];
+                if (
+                    (improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("costspurple")) && shardInfo.purpleShardCount < 5)
+                    || (improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("costsblue")) && shardInfo.blueShardCount < 5)
+                    || (improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("costsyellow")) && shardInfo.yellowShardCount < 5))
+                {
+                    validationError = "Not enough shards";
+                    __result = false;
+                }
+            }
+    }
+
+    public static bool UsesShards(ImprovementData improvementData)
+    {
+        if (improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("costspurple"))
+            || improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("costsblue"))
+            || improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("costsyellow")))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public static bool IsWorking(ImprovementData improvementData)
+    {
+        return improvementData.work > 0 || improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("dig"));
+    }
+
+    [HarmonyPostfix]
     [HarmonyPatch(typeof(GameLogicData), nameof(GameLogicData.CanBuild))]
     public static void CanBuild(ref bool __result, GameState gameState, TileData tile, PlayerState playerState, ImprovementData improvement)
     {
-        if (improvement.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("rail")) && __result)
+        if (improvement.type == EnumCache<ImprovementData.Type>.GetType("doublework"))
         {
-            if (tile.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")))
+            if (!(tile.improvement != null && gameState.GameLogicData.TryGetData(tile.improvement.type, out ImprovementData data) && IsWorking(data)))
             {
                 __result = false;
             }
+            return;
+        }
+        if (!tile.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")) && __result && improvement.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("depot")))
+        {
+            __result = false;
+        }
+        if (improvement.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("depot")) && __result && tile.unit != null && tile.unit.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")))
+        {
+            __result = false;
+        }
+        if (tile.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")))
+        {
+            if (improvement.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("rail")) && __result)
+            {
+                __result = false;
+            }
+        }
+        if (improvement.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("dedepot")) && __result)
+        {
+            __result = !(tile.unit == null || !tile.unit.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")) || !tile.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")));
         }
     }
 
@@ -810,79 +746,6 @@ public static class Main
         return true;
     }
 
-    public static void UpdateRoutes(GameState gameState, Il2CppSystem.Collections.Generic.List<TileData> changedTiles)
-    {
-        if (gameState == null || gameState.Map == null)
-            return;
-        var map = gameState.Map;
-
-        Il2CppSystem.Collections.Generic.List<TileData> list = new Il2CppSystem.Collections.Generic.List<TileData>();
-        map.ResetRoutes(list);
-
-        var empireTiles = new Il2CppSystem.Collections.Generic.List<TileData>();
-        var playerRouteOpeners = new Il2CppSystem.Collections.Generic.List<TileData>();
-        var routeOpeners = new Il2CppSystem.Collections.Generic.List<TileData>();
-
-        foreach (PlayerState player in gameState.PlayerStates)
-        {
-            if (player == null || player.Id == 255)
-                continue;
-            map.GetPlayerEmpireTiles(player.Id, empireTiles);
-            playerRouteOpeners.Clear();
-            routeOpeners.Clear();
-            Il2CppSystem.Collections.Generic.List<Polytopia.Data.TerrainData> unlockedMovements = gameState.GameLogicData.GetUnlockedMovements(player);
-            foreach (TileData tile in empireTiles)
-            {
-                if (tile.improvement != null && gameState.GameLogicData.TryGetData(tile.improvement.type, out ImprovementData improvementData))
-                {
-                    if (improvementData.IsRouteOpener())
-                    {
-                        playerRouteOpeners.Add(tile);
-                    }
-                    if (improvementData.type == ImprovementData.Type.City)
-                    {
-                        routeOpeners.Add(tile);
-                    }
-                }
-            }
-            for (int i = 0; i < playerRouteOpeners.Count; i++)
-            {
-                TileData sourceTile = playerRouteOpeners[i];
-                ImprovementData improvementData2;
-                if (gameState.GameLogicData.TryGetData(sourceTile.improvement.type, out improvementData2))
-                {
-                    for (int j = i + 1; j < playerRouteOpeners.Count; j++)
-                    {
-                        TileData targetTile = playerRouteOpeners[j];
-                        FindPathBetweenRouters(sourceTile, targetTile, unlockedMovements, player, gameState, changedTiles);
-                    }
-                    if (improvementData2.HasAbility(ImprovementAbility.Type.Network))
-                    {
-                        ushort num = 0;
-                        for (int k = 0; k < routeOpeners.Count; k++)
-                        {
-                            TileData tile = routeOpeners[k];
-                            if (FindPathBetweenRouters(sourceTile, tile, unlockedMovements, player, gameState, changedTiles))
-                            {
-                                num += 1;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        foreach (var tile in list)
-        {
-            if (!tile.hasRoute && !changedTiles.Contains(tile))
-            {
-                changedTiles.Add(tile);
-            }
-
-            tile.hadRoute = false;
-        }
-    }
-
     public static bool FindPathBetweenRouters(
         TileData origin,
         TileData destination,
@@ -892,24 +755,19 @@ public static class Main
         Il2CppSystem.Collections.Generic.List<TileData> changedTiles
     )
     {
-        Console.Write("/////////////////////////////////////////////////");
-        Console.Write(origin.coordinates);
-        Console.Write(destination.coordinates);
-        Console.Write("0");
         if (origin == null || destination == null || gameState == null)
             return false;
-        Console.Write("1");
+
         var logicData = gameState.GameLogicData;
         if (logicData == null || origin.improvement == null || destination.improvement == null)
             return false;
-        Console.Write("2");
+
         if (!logicData.TryGetData(origin.improvement.type, out var originImp) ||
             !logicData.TryGetData(destination.improvement.type, out var destImp))
             return false;
-        Console.Write("3");
+
         int distance = MapDataExtensions.ChebyshevDistance(origin.coordinates, destination.coordinates);
-        Console.Write("Distance: " + distance);
-        Console.Write("Range: " + originImp.range);
+
         if (originImp.range < distance)
             return false;
         var usableTerrain = new Il2CppSystem.Collections.Generic.List<Polytopia.Data.TerrainData>();
@@ -928,7 +786,7 @@ public static class Main
         {
             usableTerrain = originImp.routes;
         }
-        Console.Write("5");
+
         var settings = PathFinderSettings.CreateRouterSettings(player, usableTerrain, gameState.Version, gameState);
 
         Il2CppSystem.Collections.Generic.List<WorldCoordinates> path = PathFinder.GetPath(
@@ -941,7 +799,7 @@ public static class Main
 
         if (path == null || path.Count < 1)
             return false;
-        Console.Write("6");
+
         foreach (var coord in path)
         {
             int idx = MapDataExtensions.GetTileIndex(gameState.Map, coord);
@@ -959,8 +817,6 @@ public static class Main
                     changedTiles.Add(tile);
             }
         }
-        Console.Write("7");
-        Console.Write("/////////////////////////////////////////////////");
         return true;
     }
 }

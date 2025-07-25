@@ -68,10 +68,6 @@
 		"English": "Produces 1 population. This building digs out the resource underneath it. Must be on tile a with Yellow, Purple or Blue shard.",
 		"Russian": "Приносит 1 ед. населения. Это здание выкапывает ресурс под собой. Можно построить только на клетке, где есть Желтый, Фиолетовый или Синий кристал."
 	},
-	"unit_names_drill": {
-		"English": "Drill",
-		"Russian": "Дрель"
-	},
 	"building_ability_dig": {
 		"English": "This building digs out the resource underneath it.",
 		"Russian": "Это здание выкапывает ресурс под собой."
@@ -83,5 +79,25 @@
 	"unit_names_minecart": {
 		"English": "Minecart",
 		"Russian": "Вагонетка"
+	},
+	"building_names_restoreactions": {
+		"English": "Restore Actions",
+		"Russian": "Восстановить Действия"
+	},
+	"resource_names_blueshard": {
+		"English": "Blue shard",
+		"Russian": "Синий кристал"
+	},
+	"resource_names_purpleshard": {
+		"English": "Purple shard",
+		"Russian": "Фиолетовый кристал"
+	},
+	"resource_names_yellowshard": {
+		"English": "Yellow shard",
+		"Russian": "Желтый кристал"
+	},
+	"unit_names_golem": {
+		"English": "Golem",
+		"Russian": "Голем"
 	}
 }
