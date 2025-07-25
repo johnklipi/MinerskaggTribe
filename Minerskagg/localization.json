@@ -71,5 +71,17 @@
 	"unit_names_drill": {
 		"English": "Drill",
 		"Russian": "Дрель"
+	},
+	"building_ability_dig": {
+		"English": "This building digs out the resource underneath it.",
+		"Russian": "Это здание выкапывает ресурс под собой."
+	},
+	"unit_abilities_throw": {
+		"English": "THROW",
+		"Russian": "БРОСАТЬ"
+	},
+	"unit_names_minecart": {
+		"English": "Minecart",
+		"Russian": "Вагонетка"
 	}
 }

@@ -358,25 +358,10 @@ public static class Main
         if (gameState.TryGetUnit(__instance.UnitId, out unitState) && gameState.TryGetPlayer(__instance.PlayerId, out playerState) && gameState.GameLogicData.TryGetData(unitState.type, out unitData))
         {
             TileData unitTile = gameState.Map.GetTile(unitState.coordinates);
-            if (unitTile.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")) && !unitState.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")))
-            {
-                gameState.ActionStack.Add(new EmbarkAction(__instance.PlayerId, unitTile.coordinates));
-                currentlyWagoning = true;
-            }
-            else if (!unitTile.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")) && unitState.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")) && !unitTile.HasImprovement(ImprovementData.Type.City))
+            if (!unitTile.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")) && unitState.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")) && !unitTile.HasImprovement(ImprovementData.Type.City))
             {
                 gameState.ActionStack.Add(new DisembarkAction(__instance.PlayerId, unitTile.coordinates));
             }
-            // if (unitTile.improvement != null && gameState.GameLogicData.TryGetData(unitTile.improvement.type, out ImprovementData data) && data.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("depot")) && !unitState.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")))
-            // {
-            //     gameState.GameLogicData.TryGetData(EnumCache<UnitData.Type>.GetType("minecart"), out UnitData wagonData);
-            //     gameState.ActionStack.Add(new EmbarkAction(__instance.PlayerId, unitTile.coordinates));
-            //     currentlyWagoning = true;
-            // }
-            // else
-            // {
-            //     gameState.ActionStack.Add(new DisembarkAction(__instance.PlayerId, unitTile.coordinates));
-            // }
         }
     }
 
@@ -410,8 +395,8 @@ public static class Main
         }
     }
 
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(TileData), nameof(TileData.GetMovementCost))]
+    //[HarmonyPostfix]
+    //[HarmonyPatch(typeof(TileData), nameof(TileData.GetMovementCost))]
     public static void GetMovementCost(ref int __result, TileData __instance, MapData map, TileData fromTile, PathFinderSettings settings)
     {
         if (settings.unit != null)
@@ -419,7 +404,7 @@ public static class Main
             if (settings.unit.UnitData.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")))
             {
                 __result = 1000;
-                if (__instance.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")) || __instance.HasImprovement(ImprovementData.Type.City))
+                if (__instance.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")))
                 {
                     __result = 0;
                     return;
@@ -439,23 +424,68 @@ public static class Main
     }
 
     //[HarmonyPostfix]
-    //[HarmonyPatch(typeof(PathFinder), nameof(PathFinder.GetMoveOptions))]
-    private static void PathFinder_GetMoveOptions(ref Il2CppSystem.Collections.Generic.List<WorldCoordinates> __result, GameState gameState, WorldCoordinates start, int maxCost, UnitState unit)
+    //[HarmonyPatch(typeof(PathFinder), nameof(PathFinder.IsAllowedToFinishOnTile))]
+    private static void IsAllowedToFinishOnTile(ref bool __result, PathFinderSettings settings, TileData tile)
     {
-        List<WorldCoordinates> toRemove = new();
-        foreach (var cordinates in __result)
+        UnitState unit = tile.GetUnit(settings.gameState, settings.playerState.Id, false);
+        if (unit != null)
         {
-            PathFinderSettings pathFinderSettings = PathFinderSettings.CreateForUnit(unit, gameState);
-            TileData tile = gameState.Map.GetTile(cordinates);
-            int cost = tile.GetMovementCost(gameState.Map, gameState.Map.GetTile(start), pathFinderSettings);
-            if (cost == 1000)
+            if (unit.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")) && !tile.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")))
             {
-                toRemove.Add(cordinates);
+                __result = false;
             }
         }
-        foreach (var item in toRemove)
+    }
+
+    [HarmonyPostfix]
+    [HarmonyPatch(typeof(PathFinder), nameof(PathFinder.GetMoveOptions))]
+    private static void PathFinder_GetMoveOptions(ref Il2CppSystem.Collections.Generic.List<WorldCoordinates> __result, GameState gameState, WorldCoordinates start, int maxCost, UnitState unit)
+    {
+        if (unit == null)
+            return;
+
+        if (unit.UnitData.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")))
         {
-            __result.Remove(item);
+            HashSet<WorldCoordinates> visited = new();
+            Queue<WorldCoordinates> toExplore = new();
+
+            toExplore.Enqueue(start);
+            visited.Add(start);
+
+            while (toExplore.Count > 0)
+            {
+                WorldCoordinates current = toExplore.Dequeue();
+                List<TileData> neighbors = gameState.Map.GetTileNeighbors(current).ToArray().ToList();
+
+                foreach (TileData tile in neighbors)
+                {
+                    if (!visited.Contains(tile.coordinates) &&
+                        tile.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")))
+                    {
+                        visited.Add(tile.coordinates);
+                        toExplore.Enqueue(tile.coordinates);
+                    }
+                }
+            }
+
+            Il2CppSystem.Collections.Generic.List<WorldCoordinates> newResult = new Il2CppSystem.Collections.Generic.List<WorldCoordinates>();
+            foreach (var visitedTile in visited)
+            {
+                TileData tileData = gameState.Map.GetTile(visitedTile);
+                if (tileData.GetExplored(unit.owner))
+                {
+                    newResult.Add(visitedTile);
+                    List<TileData> neighbors = gameState.Map.GetTileNeighbors(visitedTile).ToArray().ToList();
+                    foreach (TileData neighbor in neighbors)
+                    {
+                        if (__result.Contains(neighbor.coordinates) && !neighbor.HasEmbarkImprovement(gameState) && tileData.GetExplored(unit.owner))
+                        {
+                            newResult.Add(neighbor.coordinates);
+                        }
+                    }
+                }
+            }
+            __result = newResult;
         }
     }
 
@@ -596,6 +626,25 @@ public static class Main
                 gameState.ActionStack.Add(new UpdateCityConnectionsAction(__instance.PlayerId, list));
                 gameState.ActionStack.Add(new UpdateRoutesAction(__instance.PlayerId));
                 return false;
+            }
+            UnitState unit = tile.unit;
+            if (unit != null)
+            {
+                if (improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("depot")))
+                {
+                    if (tile.HasEffect(EnumCache<TileData.EffectType>.GetType("railed")) && !unit.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")))
+                    {
+                        gameState.ActionStack.Add(new EmbarkAction(__instance.PlayerId, tile.coordinates));
+                        currentlyWagoning = true;
+                    }
+                }
+                else if (improvementData.HasAbility(EnumCache<ImprovementAbility.Type>.GetType("dedepot")))
+                {
+                    if (unit.HasAbility(EnumCache<UnitAbility.Type>.GetType("wagon")))
+                    {
+                        gameState.ActionStack.Add(new DisembarkAction(__instance.PlayerId, tile.coordinates));
+                    }
+                }
             }
         }
         return true;

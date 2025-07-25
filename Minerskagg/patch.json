@@ -228,6 +228,29 @@
 			"maxLevel": 0,
 			"shouldSuggestUnlock": true,
 			"idx": -1
+		},
+		"usedepot": {
+			"improvementAbilities": [
+				"consumed",
+				"freelance",
+				"manual",
+				"depot",
+				"discrete",
+				"actionless"
+			],
+			"maxLevel": 0,
+			"idx": -1
+		},
+		"unusedepot": {
+			"improvementAbilities": [
+				"consumed",
+				"freelance",
+				"manual",
+				"discrete",
+				"dedepot"
+			],
+			"maxLevel": 0,
+			"idx": -1
 		}
 	},
 	"techData": {
@@ -237,7 +260,8 @@
 				"diggyyellow",
 				"diggypurple",
 				"diggyblue",
-				"restoreactions"
+				"usedepot",
+				"unusedepot"
 			],
 			"idx": -1
 		},
@@ -247,9 +271,6 @@
 			],
 			"abilityUnlocks": [
 				"diggyhole"
-			],
-			"improvementUnlocks": [
-				"diggyyellow"
 			],
 			"cost": 2,
 			"idx": -1
@@ -322,6 +343,9 @@
 	},
 	"improvementAbility": {
 		"depot": {
+			"idx": -1
+		},
+		"dedepot": {
 			"idx": -1
 		},
 		"dig": {
